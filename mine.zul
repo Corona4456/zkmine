@@ -1,0 +1,464 @@
+<?page id="ZkMine" title="ZK Mine" cacheable="false" 
+	language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"?>
+<div>
+    <style src="css/mine.css"/>
+    <zscript><![CDATA[  {
+class Mine {
+    
+    public int w, h, n;
+    public int[][] map = null;
+    public int[][] status = null;
+    public int state = 0; // 0: progressing, 1: victory, 2:failed, 3: user quit
+    public int flags = 0;
+//    public static String[] MSG = { "Progressing...", "Victory!", "Failed!", "Exit..." };
+    
+    public Mine(int w, int h, int n) {
+        this.w = w;
+        this.h = h;
+        this.n = n;
+        this.map = new int[h][w];
+        this.status = new int[h][w];
+        List lst = new LinkedList();
+        for (int i = h*w; --i >= 0;) {
+            lst.add(new Integer(i));
+        }
+        Collections.shuffle(lst);
+        for (Iterator it = lst.listIterator(); it.hasNext() && --n >= 0;) {
+            int loc = ((Integer) it.next()).intValue();
+            map[loc/w][loc%w] = -1;
+        }
+        for (int i = h; --i >= 0;) {
+            for (int j = w; --j >= 0;) {
+                if (map[i][j] != -1) {
+                    int cnt = 0;
+                    if (i - 1 >= 0 && j - 1 >= 0 && map[i-1][j-1] == -1) cnt++;
+                    if (j - 1 >= 0 && map[i][j-1] == -1) cnt++;
+                    if (i + 1 < h && j - 1 >= 0 && map[i+1][j-1] == -1) cnt++;
+                    if (i - 1 >= 0 && map[i-1][j] == -1) cnt++;
+                    if (i + 1 < h && map[i+1][j] == -1) cnt++;
+                    if (i - 1 >= 0 && j + 1 < w && map[i-1][j+1] == -1) cnt++;
+                    if (j + 1 < w && map[i][j+1] == -1) cnt++;
+                    if (i + 1 < h && j + 1 < w && map[i+1][j+1] == -1) cnt++;
+                    map[i][j] = cnt;
+                }
+                status[i][j] = -1;
+            }
+        }
+    }
+    
+    public int getWidth() {
+        return w;
+    }
+    
+    public int getHeight() {
+        return h;
+    }
+    
+    public int[][] getView() {
+    	int[][] ret = new int[h][w];
+        for (int i = 0; i < h; i++) {
+            for (int j = 0; j < w; j++) {
+                switch (status[i][j]) {
+                case -1:
+                    ret[i][j] = 'X';
+                    break;
+                case -2:
+                	ret[i][j] = 'M'; // mine \u25cf
+                    break;
+                case 1:
+                	ret[i][j] = state == 2 && map[i][j] != -1 ? 'W' // failed and wrong flag
+                			: 'F'; // flag \u2605
+                    break;
+                case 0:
+                    if (map[i][j] == -1) {
+                    	ret[i][j] = 'B';  // boom \u00a4
+                    } else {
+                    	ret[i][j] = '0' + map[i][j];
+                    }
+                    break;
+                }
+            }
+        }
+        return ret;
+    }
+    
+    public char getViewAt(int x, int y) {
+    	char ret = 0;
+        switch (status[y][x]) {
+        case -1:
+            ret = 'X';
+            break;
+        case -2:
+            ret = 'M'; // mine \u25cf
+            break;
+        case 1:
+            ret = state == 2 && map[y][x] != -1 ? 'W' // failed and wrong flag
+                    : 'F'; // flag \u2605
+            break;
+        case 0:
+            if (map[y][x] == -1) {
+                ret = 'B';  // boom \u00a4
+            } else {
+                ret = (char) ('0' + map[y][x]);
+            }
+            break;
+        }
+        return ret;
+    }
+    
+    public final String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("  |");
+        for (int i = 1; i <= w; i++) {
+            buf.append(' ').append(i < 10 ? "0" : "").append(i);
+        }
+        buf.append("\n--|");
+        for (int i = 3*w; --i >= 0;) buf.append('-');
+        for (int i = 0; i < h; i++) {
+            buf.append(i+1 < 10 ? "\n0" : "\n").append(i+1).append('|');
+            for (int j = 0; j < w; j++) {
+                switch (status[i][j]) {
+                case -1:
+                    buf.append("  X");
+                    break;
+                case -2:
+                    buf.append("  M");
+                    break;
+                case 1:
+                    buf.append("  F");
+                    break;
+                case 0:
+                    if (map[i][j] == -1) {
+                        buf.append("  B");
+                    } else {
+                        buf.append("  "+map[i][j]);
+                    }
+                    break;
+                }
+            }
+        }
+        return buf.toString();
+    }
+    
+    public final void flag(int x, int y) {
+    	int st = status[y][x];
+    	if (st != 1 && st != -1) return;
+        status[y][x] = -st; // -1 <=> 1
+        if (status[y][x] == 1) { // mark a flag
+            flags++;
+        } else {
+        	flags--;
+        }
+    }
+    
+    public final void mine(int x, int y) {
+        if (status[y][x] == 1) { // remove flag first
+            status[y][x] = -1;
+        } else if (status[y][x] == -1) { // mine
+            int ii = map[y][x];
+            if (ii == -1) { // BOOM!
+                reveal();
+                status[y][x] = 0;
+                state = 2;
+            } else { // ii >= 0
+                if (ii > 0) {
+                    status[y][x] = 0;
+                } else { // ii == 0, open recursively
+                    status[y][x] = 0;
+                    open(x, y);
+                }
+                if (victory()) {
+                    state = 1;
+                    flagAll();
+                }
+            }
+        } else { // status[y][x] == 0, open unflaged
+            int cnt = 0;
+            if (y - 1 >= 0 && x - 1 >= 0 && status[y-1][x-1] == 1) cnt++;
+            if (x - 1 >= 0 && status[y][x-1] == 1) cnt++;
+            if (y + 1 < h && x - 1 >= 0 && status[y+1][x-1] == 1) cnt++;
+            if (y - 1 >= 0 && status[y-1][x] == 1) cnt++;
+            if (y + 1 < h && status[y+1][x] == 1) cnt++;
+            if (y - 1 >= 0 && x + 1 < w && status[y-1][x+1] == 1) cnt++;
+            if (x + 1 < w && status[y][x+1] == 1) cnt++;
+            if (y + 1 < h && x + 1 < w && status[y+1][x+1] == 1) cnt++;
+            if (cnt == map[y][x]) {
+                if (y - 1 >= 0 && x - 1 >= 0 && status[y-1][x-1] == -1) mine(x-1, y-1);
+                if (x - 1 >= 0 && status[y][x-1] == -1) mine(x-1, y);
+                if (y + 1 < h && x - 1 >= 0 && status[y+1][x-1] == -1) mine(x-1, y+1);
+                if (y - 1 >= 0 && status[y-1][x] == -1) mine(x, y-1);
+                if (y + 1 < h && status[y+1][x] == -1) mine(x, y+1);
+                if (y - 1 >= 0 && x + 1 < w && status[y-1][x+1] == -1) mine(x+1, y-1);
+                if (x + 1 < w && status[y][x+1] == -1) mine(x+1, y);
+                if (y + 1 < h && x + 1 < w && status[y+1][x+1] == -1) mine(x+1, y+1);
+            }
+        }
+    }
+    
+    public final boolean victory() {
+        for (int i = h; --i >= 0;) {
+            for (int j = w; --j >= 0;) {
+                if (map[i][j] != -1 && status[i][j] != 0) return false;
+            }
+        }
+        return true;
+    }
+    
+    public final void flagAll() {
+        for (int i = h; --i >= 0;) {
+            for (int j = w; --j >= 0;) {
+                if (map[i][j] == -1 && status[i][j] == -1) {
+                    status[i][j] = 1;
+                }
+            }
+        }
+        flags = n;
+    }
+    
+    public final void reveal() {
+        for (int i = h; --i >= 0;) {
+            for (int j = w; --j >= 0;) {
+                if (map[i][j] == -1 && status[i][j] == -1) {
+                    status[i][j] = -2;
+                }
+            }
+        }
+    }
+    
+    public final boolean over() {
+        return state != 0;
+    }
+    
+    private final void open(int x, int y) {
+//        System.out.println("("+x+","+y+") opened");
+        if (y - 1 >= 0 && x - 1 >= 0) {
+            if (status[y-1][x-1] == -1) {
+                status[y-1][x-1] = 0;
+                if (map[y-1][x-1] == 0) open(x-1, y-1);
+            }
+        }
+        if (y - 1 >= 0) {
+            if (status[y-1][x] == -1) {
+                status[y-1][x] = 0;
+                if (map[y-1][x] == 0) open(x, y-1);
+            }
+        }
+        if (y - 1 >= 0 && x + 1 < w) {
+            if (status[y-1][x+1] == -1) {
+                status[y-1][x+1] = 0;
+                if (map[y-1][x+1] == 0) open(x+1, y-1);
+            }
+        }
+        if (x - 1 >= 0) {
+            if (status[y][x-1] == -1) {
+                status[y][x-1] = 0;
+                if (map[y][x-1] == 0) open(x-1, y);
+            }
+        }
+        if (x + 1 < w) {
+            if (status[y][x+1] == -1) {
+                status[y][x+1] = 0;
+                if (map[y][x+1] == 0) open(x+1, y);
+            }
+        }
+        if (y + 1 < h && x - 1 >= 0) {
+            if (status[y+1][x-1] == -1) {
+                status[y+1][x-1] = 0;
+                if (map[y+1][x-1] == 0) open(x-1, y+1);
+            }
+        }
+        if (y + 1 < h) {
+            if (status[y+1][x] == -1) {
+                status[y+1][x] = 0;
+                if (map[y+1][x] == 0) open(x, y+1);
+            }
+        }
+        if (y + 1 < h && x + 1 < w) {
+            if (status[y+1][x+1] == -1) {
+                status[y+1][x+1] = 0;
+                if (map[y+1][x+1] == 0) open(x+1, y+1);
+            }
+        }
+    }
+}  
+
+void onClick(aDiv) {
+	if (mine.state > 0) {
+		return;
+	}
+    if (firstMove) {
+        firstMove = false;
+        timer.start();
+    }
+	x = Integer.parseInt(aDiv.getAttribute("x"));
+	y = Integer.parseInt(aDiv.getAttribute("y"));
+	mine.mine(x, y);
+    hblist = vb.children;
+    int[][] view = mine.getView();
+	for (int y = 0, h = hblist.size(); y < h; y++) {
+	    hb = hblist.get(y);
+	    divlist = hb.children;
+	    for (int x = 0, w = divlist.size(); x < w; x++) {
+	        div = divlist.get(x);
+	        oldval = div.getAttribute("v").charAt(0);
+	        newval = (char) view[y][x];
+	        if (oldval != newval) {
+	        	renderBlock(div, newval);
+	        }
+	    }
+	}
+	if (mine.state > 0) {
+		renderNum(flagsdiv, mine.n - mine.flags);
+		renderFace(face, mine.state == 1 ? "coo" : "cry");
+		timer.stop();
+	}
+}
+
+void onRightClick(aDiv) {
+	if (mine.state > 0) {
+		return;
+	}
+	if (firstMove) {
+		firstMove = false;
+		timer.start();
+	}
+    x = Integer.parseInt(aDiv.getAttribute("x"));
+    y = Integer.parseInt(aDiv.getAttribute("y"));
+	mine.flag(x, y);
+	renderBlock(aDiv, mine.getViewAt(x, y));
+	renderNum(flagsdiv, mine.n - mine.flags);
+}
+
+void renderBlock(aDiv, char val) {
+	aDiv.setAttribute("v", Character.toString(val));
+	aDiv.sclass = "fld " + (val >= '0' && val <= '8' ? "b" : "") + val;
+}
+
+void renderFace(aDiv, String status) {
+	aDiv.sclass = "face f" + status;
+}
+
+void renderNum(aDiv, int num) {
+	final String[] pref = { null, "00", "0", "" };
+	String sNum = Integer.toString(num);
+	sNum = num < 0 ? (sNum.length() < 3 ? " " + sNum : sNum)
+			: pref[sNum.length()] + sNum;
+	hbox = aDiv.firstChild;
+	for (int i = 0; i < 3; i++) {
+		char c = sNum.charAt(i);
+		String s = null;
+		switch (c) {
+		case '-':
+			s = "minus";
+			break;
+		case ' ':
+			s = "blank";
+			break;
+		default:
+			s = Character.toString(c);
+		}
+		hbox.children.get(i).sclass = "num n" + s;
+	}
+}
+
+void renderField() {
+	vbox = fld.firstChild;
+	fld.removeChild(vbox);
+	vbox = new Vbox();
+	vbox.id = "vb";
+	vbox.spacing = "0";
+	fld.appendChild(vbox);
+	win.width = (16 * mine.w + 20) + "px";
+	win.height = "auto";
+	facediv.width = (16 * mine.w - 112) + "px";
+	for (y = 0, h = mine.h; y < h; y++) {
+		hbox = new Hbox();
+		hbox.spacing = "0";
+		vbox.appendChild(hbox);
+		for (x = 0, w = mine.w; x < w; x++) {
+			div = new Div();
+            div.setAttribute("x", "" + x);
+            div.setAttribute("y", "" + y);
+            div.addEventListener("onClick", new EventListener() {
+                public void onEvent(Event event) {
+                    onClick(event.target);
+                }
+            });
+            div.addEventListener("onRightClick", new EventListener() {
+                public void onEvent(Event event) {
+                    onRightClick(event.target);
+                }
+            });
+			renderBlock(div, 'X');
+			hbox.appendChild(div);
+		}
+	}
+}
+
+void newMine(w, h, num) {
+	mine = new Mine(w, h, num);
+	firstMove = true;
+	time = 0;
+	renderField();
+	renderFace(face, "nor");
+	renderNum(flagsdiv, mine.n);
+	renderNum(timediv, time);
+	timer.stop();
+}
+
+mine = new Mine(16, 16, 40);
+time = 0;
+firstMove = true;
+	} ]]>
+	</zscript>
+	<window id="win" border="normal" width="160px">
+		<caption image="img/icon.png" label="ZK Mine"/>
+		<vbox spacing="0" style="background: lightgrey">
+			<menubar id="menubar">
+				<menu label="File">
+					<menupopup>
+						<menuitem label="New"
+							onClick="newMine(mine.w, mine.h, mine.n);" />
+						<menuseparator />
+						<menuitem label="Beginner"
+							onClick="newMine(9, 9, 10);" />
+						<menuitem label="Normal"
+							onClick="newMine(16, 16, 40);" />
+						<menuitem label="Expert"
+							onClick="newMine(30, 16, 99);" />
+						<menuitem label="Customized..."
+							onClick="alert(self.label)" />
+					</menupopup>
+				</menu>
+				<menu label="Help">
+					<menupopup>
+						<menuitem label="About ZK Mine"
+							onClick="alert(&quot;ZK Mine is developed by Rocks@cnjm.net.&quot;)" />
+					</menupopup>
+				</menu>
+			</menubar>
+			<div style="margin: 4px; border: 2px solid lightgray; border-style: inset; background: lightgrey;">
+			  <hbox spacing="0">
+                <div id="flagsdiv" width="39px" height="23px" style="margin: 4px; border: 1px solid; border-color: darkgray white white darkgray; background: lightgrey;">
+                  <hbox spacing="0"><div/><div/><div/></hbox>
+                  <zscript>renderNum(self, mine.n)</zscript>
+                </div>
+                <div id="facediv" style="margin: 4px; border: 1px solid lightgrey;text-align: center">
+                  <div id="face" onClick="newMine(mine.w, mine.h, mine.n);"/>
+                  <zscript>renderFace(face, "nor");</zscript>
+                </div>
+                <div id="timediv" width="39px" height="23px" style="margin: 4px; border: 1px solid; border-color: darkgray white white darkgray; background: lightgrey;">
+                  <hbox spacing="0"><div/><div/><div/></hbox>
+                  <timer id="timer" delay="1000" repeats="true" running="false"
+                    onTimer="time++; renderNum(timediv, time); "/>
+                  <zscript>renderNum(self, 0)</zscript>
+                </div>
+			  </hbox>
+			</div>
+			<div id="fld" style="margin: 4px; border: 2px solid lightgrey; border-style: inset;">
+				<vbox />
+				<zscript>renderField();</zscript>
+			</div>
+		</vbox>
+	</window>
+</div>

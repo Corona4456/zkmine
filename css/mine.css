@@ -1,0 +1,148 @@
+.fld {
+width: 16px;
+height: 16px;
+font-size: 0px; 
+border: none; 
+background: url('../img/mine.gif') no-repeat 0px 0px;
+}
+
+.X {
+background-position-y: 0px;
+}
+
+.M {
+background-position-y: -80px;
+}
+
+.W {
+background-position-y: -64px;
+}
+
+.F {
+background-position-y: -16px;
+}
+
+.B {
+background-position-y: -48px;
+}
+
+.b0 {
+background-position-y: -240px;
+}
+
+.b1 {
+background-position-y: -224px;
+}
+
+.b2 {
+background-position-y: -208px;
+}
+
+.b3 {
+background-position-y: -192px;
+}
+
+.b4 {
+background-position-y: -176px;
+}
+
+.b5 {
+background-position-y: -160px;
+}
+
+.b6 {
+background-position-y: -144px;
+}
+
+.b7 {
+background-position-y: -128px;
+}
+
+.b8 {
+background-position-y: -112px;
+}
+
+.face {
+width: 24px;
+height: 24px;
+font-size: 0px; 
+border: none; 
+background: url('../img/face.gif') no-repeat 0px 0px;
+}
+
+.fnor {
+background-position-y: -96px;
+}
+
+.fprs {
+background-position-y: 0px;
+}
+
+.fcoo {
+background-position-y: -24px;
+}
+
+.fcry {
+background-position-y: -48px;
+}
+
+.fops {
+background-position-y: -72px;
+}
+
+.num {
+width: 13px;
+height: 23px;
+font-size: 0px; 
+border: none; 
+background: url('../img/num.gif') no-repeat 0px 0px;
+}
+
+.nminus {
+background-position-y: 0px;
+}
+
+.nblank {
+background-position-y: -23px;
+}
+
+.n9 {
+background-position-y: -46px;
+}
+
+.n8 {
+background-position-y: -69px;
+}
+
+.n7 {
+background-position-y: -92px;
+}
+
+.n6 {
+background-position-y: -115px;
+}
+
+.n5 {
+background-position-y: -138px;
+}
+
+.n4 {
+background-position-y: -161px;
+}
+
+.n3 {
+background-position-y: -184px;
+}
+
+.n2 {
+background-position-y: -207px;
+}
+
+.n1 {
+background-position-y: -230px;
+}
+
+.n0 {
+background-position-y: -253px;
+}
+
