@@ -2,6 +2,7 @@
 	language="xul/html" zscriptLanguage="Java" contentType="text/html;charset=UTF-8"?>
 <div>
     <style src="css/mine.css"/>
+	<window id="win" border="normal">
     <zscript><![CDATA[  {
 class Mine {
     
@@ -290,9 +291,9 @@ void onClick(aDiv) {
         firstMove = false;
         timer.start();
     }
-	x = Integer.parseInt(aDiv.getAttribute("x"));
-	y = Integer.parseInt(aDiv.getAttribute("y"));
-	mine.mine(x, y);
+	x_pos = Integer.parseInt(aDiv.getAttribute("x"));
+	y_pos = Integer.parseInt(aDiv.getAttribute("y"));
+	mine.mine(x_pos, y_pos);
     hblist = vb.children;
     int[][] view = mine.getView();
 	for (int y = 0, h = hblist.size(); y < h; y++) {
@@ -322,10 +323,10 @@ void onRightClick(aDiv) {
 		firstMove = false;
 		timer.start();
 	}
-    x = Integer.parseInt(aDiv.getAttribute("x"));
-    y = Integer.parseInt(aDiv.getAttribute("y"));
-	mine.flag(x, y);
-	renderBlock(aDiv, mine.getViewAt(x, y));
+    x_pos = Integer.parseInt(aDiv.getAttribute("x"));
+    y_pos = Integer.parseInt(aDiv.getAttribute("y"));
+	mine.flag(x_pos, y_pos);
+	renderBlock(aDiv, mine.getViewAt(x_pos, y_pos));
 	renderNum(flagsdiv, mine.n - mine.flags);
 }
 
@@ -368,7 +369,7 @@ void renderField() {
 	vbox.id = "vb";
 	vbox.spacing = "0";
 	fld.appendChild(vbox);
-	win.width = (16 * mine.w + 20) + "px";
+	win.width = (16 * mine.w + 34) + "px";
 	win.height = "auto";
 	facediv.width = (16 * mine.w - 112) + "px";
 	for (y = 0, h = mine.h; y < h; y++) {
@@ -411,7 +412,6 @@ time = 0;
 firstMove = true;
 	} ]]>
 	</zscript>
-	<window id="win" border="normal" width="160px">
 		<caption image="img/icon.png" label="ZK Mine"/>
 		<vbox spacing="0" style="background: lightgrey">
 			<menubar id="menubar">
@@ -456,7 +456,7 @@ firstMove = true;
 			  </hbox>
 			</div>
 			<div id="fld" style="margin: 4px; border: 2px solid lightgrey; border-style: inset;">
-				<vbox />
+				<vbox></vbox>
 				<zscript>renderField();</zscript>
 			</div>
 		</vbox>

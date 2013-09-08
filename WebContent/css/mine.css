@@ -7,59 +7,59 @@ background: url('../img/mine.gif') no-repeat 0px 0px;
 }
 
 .X {
-background-position-y: 0px;
+background-position: 0px 0px;
 }
 
 .M {
-background-position-y: -80px;
+background-position: 0px -80px;
 }
 
 .W {
-background-position-y: -64px;
+background-position: 0px -64px;
 }
 
 .F {
-background-position-y: -16px;
+background-position: 0px -16px;
 }
 
 .B {
-background-position-y: -48px;
+background-position: 0px -48px;
 }
 
 .b0 {
-background-position-y: -240px;
+background-position: 0px -240px;
 }
 
 .b1 {
-background-position-y: -224px;
+background-position: 0px -224px;
 }
 
 .b2 {
-background-position-y: -208px;
+background-position: 0px -208px;
 }
 
 .b3 {
-background-position-y: -192px;
+background-position: 0px -192px;
 }
 
 .b4 {
-background-position-y: -176px;
+background-position: 0px -176px;
 }
 
 .b5 {
-background-position-y: -160px;
+background-position: 0px -160px;
 }
 
 .b6 {
-background-position-y: -144px;
+background-position: 0px -144px;
 }
 
 .b7 {
-background-position-y: -128px;
+background-position: 0px -128px;
 }
 
 .b8 {
-background-position-y: -112px;
+background-position: 0px -112px;
 }
 
 .face {
@@ -71,23 +71,23 @@ background: url('../img/face.gif') no-repeat 0px 0px;
 }
 
 .fnor {
-background-position-y: -96px;
+background-position: 0px -96px;
 }
 
 .fprs {
-background-position-y: 0px;
+background-position: 0px 0px;
 }
 
 .fcoo {
-background-position-y: -24px;
+background-position: 0px -24px;
 }
 
 .fcry {
-background-position-y: -48px;
+background-position: 0px -48px;
 }
 
 .fops {
-background-position-y: -72px;
+background-position: 0px -72px;
 }
 
 .num {
@@ -99,50 +99,50 @@ background: url('../img/num.gif') no-repeat 0px 0px;
 }
 
 .nminus {
-background-position-y: 0px;
+background-position: 0px 0px;
 }
 
 .nblank {
-background-position-y: -23px;
+background-position: 0px -23px;
 }
 
 .n9 {
-background-position-y: -46px;
+background-position: 0px -46px;
 }
 
 .n8 {
-background-position-y: -69px;
+background-position: 0px -69px;
 }
 
 .n7 {
-background-position-y: -92px;
+background-position: 0px -92px;
 }
 
 .n6 {
-background-position-y: -115px;
+background-position: 0px -115px;
 }
 
 .n5 {
-background-position-y: -138px;
+background-position: 0px -138px;
 }
 
 .n4 {
-background-position-y: -161px;
+background-position: 0px -161px;
 }
 
 .n3 {
-background-position-y: -184px;
+background-position: 0px -184px;
 }
 
 .n2 {
-background-position-y: -207px;
+background-position: 0px -207px;
 }
 
 .n1 {
-background-position-y: -230px;
+background-position: 0px -230px;
 }
 
 .n0 {
-background-position-y: -253px;
+background-position: 0px -253px;
 }
 
